@@ -1,6 +1,15 @@
 # Facial-Recognition
  An implementation of Siamese Neural Networks for facial recognition
 
+### Data
+
+Using [yale face dataset](http://vision.ucsd.edu/content/yale-face-database)
+_Collection of greyscale faces of differing light and facial expressions_
+
+_example:_
+
+<img src ="plots/data_example.png" width = 200>
+
 ### Siamese Networks
  Contrastive loss implementation
 
