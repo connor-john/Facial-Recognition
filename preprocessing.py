@@ -82,7 +82,7 @@ def create_datasets(img, n_subjects, N, images, labels):
 
             test_i += 1
     
-    return train_images, train_labels, test_images, test_labels
+    return train_images, train_labels, test_images, test_labels, n_train, n_test
 
 # Create dictionary of training data
 # {Data label :  indexes of data}
@@ -105,6 +105,45 @@ def create_dictionary(train_labels, test_labels):
     
     return train_label2idx, test_label2idx
 
+# Create all combinations of pairs using the dictionary
+# Subject 1: A, B
+# Subject 2: C, D
+#
+# Positives: [(A,B),(C,D)]
+# Negatives: [(A,C),(A,D),(B,C),(B,D)]
+def create_pairs(n_train, n_test, train_label2idx, test_label2idx):
+        
+    train_positives = []
+    train_negatives = []
+    test_positives = []
+    test_negatives = []
+
+    for label, indices in train_label2idx.items():
+        # all indices that do NOT belong to this subject
+        other_indices = set(range(n_train)) - set(indices)
+
+        for i, idx1 in enumerate(indices):
+            for idx2 in indices[i+1:]:
+                train_positives.append((idx1, idx2))
+
+            for idx2 in other_indices:
+                train_negatives.append((idx1, idx2))
+
+    for label, indices in test_label2idx.items():
+        # all indices that do NOT belong to this subject
+        other_indices = set(range(n_test)) - set(indices)
+
+        for i, idx1 in enumerate(indices):
+            for idx2 in indices[i+1:]:
+                test_positives.append((idx1, idx2))
+
+            for idx2 in other_indices:
+                test_negatives.append((idx1, idx2))
+    
+    return train_positives, train_negatives, test_positives, test_negatives
+
+
+
 # prepare data
 def prepare_data(datapath, H, W):
 
@@ -118,8 +157,10 @@ def prepare_data(datapath, H, W):
     unique_labels = set(label_count.keys())
     n_subjects = len(label_count)
     
-    train_images, train_labels, test_images, test_labels = create_datasets(img, n_subjects, N, images, labels)
+    train_images, train_labels, test_images, test_labels, n_train, n_test = create_datasets(img, n_subjects, N, images, labels)
 
     train_label2idx, test_label2idx = create_dictionary(train_labels, test_labels)
+
+    train_positives, train_negatives, test_positives, test_negatives = create_pairs(n_train, n_test, train_label2idx, test_label2idx)
 
 
