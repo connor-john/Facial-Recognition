@@ -163,4 +163,6 @@ def prepare_data(datapath, H, W):
 
     train_positives, train_negatives, test_positives, test_negatives = create_pairs(n_train, n_test, train_label2idx, test_label2idx)
 
+    return train_images, train_labels, test_images, test_labels, train_positives, train_negatives, test_positives, test_negatives
+
 

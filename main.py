@@ -2,13 +2,19 @@
 import numpy as np
 import torch
 
+from model import *
+from preprocessing import prepare_data
+
 # Hyper params
 H = 60
 W = 80
+batch_size = 64
+datapath = ''
+feature_dim = 50
 
 # Generator training/testing loop
 # each batch send 1 pair of each subject and same number non-matching
-def run_generator(positives, negatives, images, batch_size = 64, train = True):
+def run_generator(positives, negatives, images, train = True):
 
     n_batches = int(np.ceil(len(positives) / batch_size))
 
@@ -60,3 +66,16 @@ def run_generator(positives, negatives, images, batch_size = 64, train = True):
             y = torch.from_numpy(y).float()
 
             yield [x1, x2], y
+
+# main
+if __name__ == '__main__':
+
+    # initialise
+    train_images, train_labels, test_images, test_labels, train_positives, train_negatives, test_positives, test_negatives = prepare_data(datapath, H, W)
+    model = SiameseModel(feature_dim)
+    optimizer = torch.optim.Adam(model.parameters())
+
+    train_steps = int(np.ceil(len(train_positives) / batch_size))
+    test_steps = int(np.ceil(len(test_positives) / batch_size))
+
+    # training loop
