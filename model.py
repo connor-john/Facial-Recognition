@@ -1,6 +1,7 @@
 # importing the libraries
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 # Siamese Neural Network
 class SiameseModel(nn.Module):
@@ -29,3 +30,8 @@ class SiameseModel(nn.Module):
 
     # return euclid. distance between the features
     return torch.norm(feat1 - feat2, dim = -1)
+
+# loss function
+def contrastive_loss(y, t):
+    nonmatch = F.relu(1 - y) # max(margin - y, 0)
+    return torch.mean(t * y**2 + (1 - t) * nonmatch**2)
