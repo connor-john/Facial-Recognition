@@ -16,3 +16,13 @@ _example:_
 ![d=||f(x_1) - f(x_2)||_2](https://render.githubusercontent.com/render/math?math=d%3D%7C%7Cf(x_1)%20-%20f(x_2)%7C%7C_2)
 
 ![L = yd^2 + (1 - y)\[max(m - d,0)\]^2](https://render.githubusercontent.com/render/math?math=L%20%3D%20yd%5E2%20%2B%20(1%20-%20y)%5Bmax(m%20-%20d%2C0)%5D%5E2)
+
+TODO:
+contrastive loss
+ - formula
+ - method
+
+findings
+ - imbalanced classes (more non matches than matches)
+ - sensitvity (true postiive rate) 0.88 at threshold 0.65
+
