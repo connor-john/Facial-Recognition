@@ -35,3 +35,13 @@ class SiameseModel(nn.Module):
 def contrastive_loss(y, t):
     nonmatch = F.relu(1 - y) # max(margin - y, 0)
     return torch.mean(t * y**2 + (1 - t) * nonmatch**2)
+
+# Convenience function to make predictions
+def predict(model, device, x1, x2):
+    x1 = torch.from_numpy(x1).float().to(device)
+    x2 = torch.from_numpy(x2).float().to(device)
+
+    with torch.no_grad():
+      dist = model(x1, x2).cpu().numpy()
+
+      return dist.flatten()
