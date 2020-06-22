@@ -4,6 +4,7 @@ import torch
 
 from model import *
 from preprocessing import prepare_data
+from datetime import datetime
 
 # Hyper params
 H = 60
@@ -67,15 +68,82 @@ def run_generator(positives, negatives, images, train = True):
 
             yield [x1, x2], y
 
+# Training loop
+# Batch gradient descent
+def train(model, criterion, optimizer, train_gen, test_gen, train_steps_per_epoch, test_steps_per_epoch, epochs):
+
+    train_losses = np.zeros(epochs)
+    test_losses = np.zeros(epochs)
+
+    for i in range(epochs):
+
+        t0 = datetime.now()
+        train_loss = []
+        steps = 0
+        for (x1, x2), targets in train_gen:
+
+            # data to GPU
+            x1, x2, targets = x1.to(device), x2.to(device), targets.to(device)
+
+            # zero the parameter gradients
+            optimizer.zero_grad()
+
+            # Forward pass
+            outputs = model(x1, x2)
+            loss = criterion(outputs, targets)
+                
+            # Backward and optimize
+            loss.backward()
+            optimizer.step()
+
+            train_loss.append(loss.item())
+
+            # Update steps
+            steps += 1
+            if steps >= train_steps_per_epoch:
+                break
+
+        # Get train loss and test loss
+        train_loss = np.mean(train_loss)
+        
+        test_loss = []
+        steps = 0
+        for (x1, x2), targets in test_gen:
+
+            x1, x2, targets = x1.to(device), x2.to(device), targets.to(device)
+            outputs = model(x1, x2)
+            loss = criterion(outputs, targets)
+            test_loss.append(loss.item())
+            steps += 1
+            if steps >= train_steps_per_epoch:
+                break
+
+        test_loss = np.mean(test_loss)
+
+        # Save losses
+        train_losses[i] = train_loss
+        test_losses[i] = test_loss
+        
+        dt = datetime.now() - t0
+        print(f'epoch {i+1}/{epochs} | train_loss: {train_loss:.4f} | test_oss: {test_loss:.4f} | duration: {dt}')
+    
+    return train_losses, test_losses
+
 # main
 if __name__ == '__main__':
 
     # initialise
     train_images, train_labels, test_images, test_labels, train_positives, train_negatives, test_positives, test_negatives = prepare_data(datapath, H, W)
     model = SiameseModel(feature_dim)
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model.to(device)
     optimizer = torch.optim.Adam(model.parameters())
 
     train_steps = int(np.ceil(len(train_positives) / batch_size))
     test_steps = int(np.ceil(len(test_positives) / batch_size))
 
     # training loop
+    train_losses, test_losses = train(model, contrastive_loss, optimizer, 
+                                        run_generator(train_positives, train_negatives, train_images), 
+                                        run_generator(test_positives, test_negatives, test_images, train = False), 
+                                        train_steps, test_steps, epochs=20)
