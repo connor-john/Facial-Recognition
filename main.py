@@ -1,10 +1,12 @@
 # importing the libraries
 import numpy as np
 import torch
+from datetime import datetime
 
 from model import *
 from preprocessing import prepare_data
-from datetime import datetime
+from utils import test_accuracy
+
 
 # Hyper params
 H = 60
@@ -147,3 +149,7 @@ if __name__ == '__main__':
                                         run_generator(train_positives, train_negatives, train_images), 
                                         run_generator(test_positives, test_negatives, test_images, train = False), 
                                         train_steps, test_steps, epochs=20)
+    
+    # Evaluate
+    test_accuracy(H, W, test_images, test_positives, test_negatives, predict, threshold=0.7)
+    
